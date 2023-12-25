@@ -34,6 +34,12 @@ class User(AbstractUser):
         return super().save(*args, **kwargs)
 
 
+# class UserManager(BaseUserManager):
+#     def get_queryset(self, *args, **kwargs):
+#         results = super().get_queryset(*args, **kwargs)
+#         return results.filter(role=User.Role.EMPLOYEE)
+
+
 class Employee(User):
     base_role = User.Role.EMPLOYEE
 
@@ -59,3 +65,4 @@ class Attendance(models.Model):
     attendee = models.ForeignKey(User, on_delete=models.CASCADE)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
+

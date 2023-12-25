@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 
 class Company(models.Model):
@@ -8,6 +8,12 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
+
+
+# class UserManager(BaseUserManager):
+#     def get_queryset(self, user_role, *args, **kwargs):
+#         results = super().get_queryset(*args, **kwargs)
+#         return results.filter(role=user_role)
 
 
 class User(AbstractUser):
@@ -19,13 +25,13 @@ class User(AbstractUser):
 
     base_role = Role.SUPERUSER
     role = models.CharField(max_length=50, choices=Role.choices)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, default=1)
+    productivity_rate = models.SmallIntegerField(default=1, null=True, blank=True)
+    phone_number = models.CharField(max_length=10, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            self.role = self.base_role
+        self.role = self.base_role
         return super().save(*args, **kwargs)
-
 
 
 class Employee(User):
@@ -47,3 +53,9 @@ class CompanyAdmin(User):
 
     class Meta:
         proxy = True
+
+
+class Attendance(models.Model):
+    attendee = models.ForeignKey(User, on_delete=models.CASCADE)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)

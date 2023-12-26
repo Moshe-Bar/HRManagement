@@ -30,7 +30,8 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=10, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        self.role = self.base_role
+        if not self.pk:
+            self.role = self.base_role
         return super().save(*args, **kwargs)
 
 
@@ -66,3 +67,16 @@ class Attendance(models.Model):
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
 
+# maybe it will become in use later
+# from django.db import models
+# from django.dispatch import receiver
+#
+# class User(AbstractUser):
+#     email = models.EmailField(unique=False,)
+#     # ...other fields
+#     # and don't override save()
+#
+# @receiver(models.signals.post_save, sender=User)
+# def user_created(sender, instance, created, **kwargs):
+#     if created and instance.is_employee:
+#         Employee.objects.create(manager=instance)

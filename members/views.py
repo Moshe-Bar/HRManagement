@@ -54,9 +54,3 @@ def login_view(request):
             return JsonResponse({'status': 'error', 'message': 'Invalid username or password'}, status=401)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
-
-
-@login_required
-def test_logged_user(request):
-    return JsonResponse({'status': 'success', 'message': 'Logged in user success'})
-

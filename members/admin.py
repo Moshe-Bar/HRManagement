@@ -17,6 +17,5 @@ from members.models import Company, User, Attendance, Sector, Shift, Employee
 admin.site.register(Sector)
 admin.site.register(Shift)
 admin.site.register(Company)
-admin.site.register(User)
 admin.site.register(Employee)
 admin.site.register(Attendance)

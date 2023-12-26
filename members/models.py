@@ -11,7 +11,7 @@ class Employee(models.Model):
     role = models.CharField(max_length=50, default='Employee', choices=Role.choices)
     productivity_rate = models.SmallIntegerField(default=1, null=True, blank=True)
     company = models.ForeignKey('Company', on_delete=models.CASCADE)
-    sector = models.ManyToManyField('Sector', blank=True)
+    sector = models.ManyToManyField('Sector')
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     active = models.BooleanField(default=False)
 
@@ -48,7 +48,7 @@ class Attendance(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    sector = models.ManyToManyField(Sector, null=True, blank=True)
+    sector = models.ManyToManyField(Sector)
 
 
 class Shift(models.Model):

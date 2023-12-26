@@ -16,22 +16,20 @@ from members.models import Employee
 @csrf_exempt  # For demonstration purposes only; use a more secure method in production
 @login_required
 @admin_permission_required
-def new_employee(request):
+def new_employee(request, company_name):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
             username = data['username']
             company = data['company']
+            # not really need because the link is with the company name
         except (JSONDecodeError, KeyError):
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
 
-        inviter = Employee.objects.get(user=request.user)
-
-        if not inviter.company.name == company:
-            return JsonResponse({'status': 'error', 'message': 'Unauthorized', 'reason': 'inviter not in that company'},
-                                status=401)
+        inviter = Employee.objects.get(user=request.user, company__name=company_name)
 
         user = User.objects.get(username=username)
+
         if not user:
             return JsonResponse({'status': 'error', 'message': 'Invalid username'}, status=400)
         try:
@@ -41,7 +39,7 @@ def new_employee(request):
                           active=False)
             em.save()
         except Exception:
-            return JsonResponse({'status': 'error', 'message': 'Count create new employee'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'Can not create new employee'}, status=400)
         return JsonResponse({'status': 'success', 'message': 'New employee created', 'pk': em.pk}, status=200)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)

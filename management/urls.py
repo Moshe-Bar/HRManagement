@@ -1,9 +1,9 @@
 
-from django.urls import path, include
+from django.urls import path
 
-from management.views import get_attendance
+from management.views import new_employee
 
 urlpatterns = [
-    path('attendance/', get_attendance, name='attendance')
+    path('new_employee/<str:company_name>/', new_employee, name='new_employee')
 
 ]

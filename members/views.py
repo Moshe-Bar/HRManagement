@@ -42,6 +42,7 @@ def login_view(request):
             data = json.loads(request.body.decode('utf-8'))
             username = data['username']
             password = data['password']
+            logging.log(level=logging.WARNING, msg=data)
         except (JSONDecodeError, KeyError):
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
 
@@ -52,5 +53,5 @@ def login_view(request):
             return JsonResponse({'status': 'success', 'message': 'Login successful'})
         else:
             return JsonResponse({'status': 'error', 'message': 'Invalid username or password'}, status=401)
-
+    logging.log(level=logging.WARNING, msg=f'method not supported: {request.method}')
     return JsonResponse({'error': 'Invalid request method'}, status=405)

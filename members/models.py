@@ -1,10 +1,19 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager, User
+from django.contrib.auth.models import AbstractUser
+
+
+class User(AbstractUser):
+    name = models.CharField(max_length=50)
+    email = models.CharField(max_length=50, unique=True)
+    password = models.CharField(max_length=255)
+    username = None
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
 
 
 class Company(models.Model):
     name = models.CharField(max_length=50, unique=True)
-    contact = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    contact = models.ForeignKey('User', null=True, blank=True, on_delete=models.CASCADE)
     description = models.TextField()
 
     def __str__(self):
@@ -26,7 +35,7 @@ class Employee(models.Model):
     productivity_rate = models.SmallIntegerField(default=1, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     sector = models.ManyToManyField(Sector, blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
     active = models.BooleanField(default=False)
 
     class Meta:
@@ -44,7 +53,7 @@ class Attendance(models.Model):
 
 
 class Shift(models.Model):
-    name = models.CharField(max_length=30,null=True, blank=True)
+    name = models.CharField(max_length=30, null=True, blank=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     sector = models.ManyToManyField(Sector)

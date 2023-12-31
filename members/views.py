@@ -1,57 +1,58 @@
+import datetime
 import logging
 
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+import jwt
 from django.http import JsonResponse
-from django.shortcuts import render
-from json.decoder import JSONDecodeError
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.utils import json
+from rest_framework import permissions
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import permission_classes
+from rest_framework.views import APIView
+
+from HRManagement.settings import SECRET_KEY
+from members.models import User
+from members.permissions import login_required
+from members.serializers import UserSerializer
 
 
-# todo remove for production
-@csrf_exempt  # For demonstration purposes only; use a more secure method in production
-def register(request):
-    if request.method == 'POST':
-        # Parse JSON data from the request body
-        data = json.loads(request.body.decode('utf-8'))
+@permission_classes((AllowAny,))
+class RegisterView(APIView):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
-        # Create a UserCreationForm instance with JSON data
-        form = UserCreationForm(data)
-
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-
-            # Return a JSON response indicating success
-            return JsonResponse({'status': 'success', 'message': 'Registration successful'})
-
-        # If form is not valid, return a JSON response with error details
-        errors = form.errors.as_json()
-        return JsonResponse({'status': 'error', 'errors': errors}, status=400)
-
-    # If the request method is not POST, return a JSON response with an error
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        logging.log(level=logging.WARNING, msg=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return JsonResponse(serializer.data)
 
 
-@csrf_exempt  # For demonstration purposes only; use a more secure method in production
-def login_view(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-            username = data['username']
-            password = data['password']
-            logging.log(level=logging.WARNING, msg=data)
-        except (JSONDecodeError, KeyError):
-            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+@permission_classes((AllowAny,))
+class LoginView(APIView):
+    def post(self, request):
+        email = request.data['email']
+        password = request.data['password']
 
-        user = authenticate(request, username=username, password=password)
+        user = User.objects.filter(email=email).first()
 
-        if user is not None:
-            login(request, user)
-            return JsonResponse({'status': 'success', 'message': 'Login successful'})
-        else:
-            return JsonResponse({'status': 'error', 'message': 'Invalid username or password'}, status=401)
-    logging.log(level=logging.WARNING, msg=f'method not supported: {request.method}')
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
+        if not user:
+            raise AuthenticationFailed('User not found')
+
+        if not user.check_password(password):
+            raise AuthenticationFailed('Incorrect password')
+
+        token_payload = {
+            'id': user.id,
+            'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=60),
+            'iat': datetime.datetime.now(datetime.UTC)
+        }
+        token = jwt.encode(token_payload, SECRET_KEY, algorithm='HS256')
+        response = JsonResponse({'status': 'success', 'message': 'Login successful'})
+        response.set_cookie(key='jwt', value=token, httponly=True, expires=token_payload['exp'])
+        return response
+
+
+@login_required
+def data(request):
+    return JsonResponse({'status': 'success', 'message': request.COOKIES.get('jwt')}, status=200)
+

@@ -35,8 +35,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'members',
+    'rest_framework',
     'corsheaders'
 ]
 
@@ -121,7 +121,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# AUTH_USER_MODEL = 'members.User'
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -130,6 +129,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
 }
+
+AUTH_USER_MODEL = 'members.User'
 
 LOGGING = {
     'version': 1,
@@ -147,4 +148,13 @@ LOGGING = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
+]
+
+# Allow all headers and methods from any origin
+# CORS_ALLOW_HEADERS = '*'
+CORS_ALLOW_METHODS = '*'
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'Content-Type',
+    '*'
 ]
